@@ -154,4 +154,9 @@ public class ProductServiceImpl implements ProductService {
 
         return filteredProducts;
     }
+
+    @Override
+    public List<Product> findAllProducts() {
+        return productRepository.findAll();
+    }
 }

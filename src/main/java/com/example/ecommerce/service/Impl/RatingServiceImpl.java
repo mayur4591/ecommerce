@@ -9,10 +9,12 @@ import com.example.ecommerce.request.RatingRequest;
 import com.example.ecommerce.service.ProductService;
 import com.example.ecommerce.service.RatingService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Service
 public class RatingServiceImpl implements RatingService {
 
     @Autowired
