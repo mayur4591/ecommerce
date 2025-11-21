@@ -12,6 +12,7 @@ import com.example.ecommerce.service.CartService;
 import com.example.ecommerce.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class CartServiceImpl implements CartService {
@@ -54,13 +55,13 @@ public class CartServiceImpl implements CartService {
             cartItem.setSize(req.getSize());
 
             CartItem createdCartItem = cartItemService.createCartItem(cartItem);
-            cart.getCartItems().add(createdCartItem);
         }
 
         return "Item Add to cart";
     }
 
     @Override
+    @Transactional
     public Cart findUserCart(Long userId) {
         Cart cart = cartRepository.findByUserId(userId);
 

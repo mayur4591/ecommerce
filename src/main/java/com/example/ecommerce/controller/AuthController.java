@@ -1,11 +1,13 @@
 package com.example.ecommerce.controller;
 
 import com.example.ecommerce.config.JwtProvider;
+import com.example.ecommerce.entity.Cart;
 import com.example.ecommerce.entity.User;
 import com.example.ecommerce.exception.UserException;
 import com.example.ecommerce.repository.UserRepository;
 import com.example.ecommerce.request.LoginRequest;
 import com.example.ecommerce.response.AuthResponse;
+import com.example.ecommerce.service.CartService;
 import com.example.ecommerce.service.CustomeUserServiceImplementation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -37,6 +39,9 @@ public class AuthController {
     @Autowired
     private CustomeUserServiceImplementation customeUserServiceImplementation;
 
+    @Autowired
+    private CartService cartService;
+
     @PostMapping("/signup")
     public ResponseEntity<AuthResponse> createUserHandler(@RequestBody User user) throws UserException {
 
@@ -58,6 +63,7 @@ public class AuthController {
         createdUser.setLastName(lastName);
 
         User savedUser =userRepository.save(createdUser);
+        Cart cart = cartService.createCart(savedUser);
 
         Authentication authentication=new UsernamePasswordAuthenticationToken(savedUser.getEmail(),savedUser.getPassword());
         SecurityContextHolder.getContext().setAuthentication(authentication);

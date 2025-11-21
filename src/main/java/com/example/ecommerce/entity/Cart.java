@@ -1,17 +1,17 @@
 package com.example.ecommerce.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
+@ToString(exclude = "cartItems")
 public class Cart {
 
     @Id
@@ -22,7 +22,7 @@ public class Cart {
     @JoinColumn(name = "user_id",nullable = false)
     private User user;
 
-    @OneToMany(mappedBy = "cart",cascade = CascadeType.ALL,orphanRemoval = true)
+    @OneToMany(mappedBy = "cart",cascade = CascadeType.ALL,fetch = FetchType.LAZY, orphanRemoval = true)
     @Column(name = "cart_items")
     private Set<CartItem> cartItems = new HashSet<>();
 
@@ -35,6 +35,5 @@ public class Cart {
     private int totalDiscountedPrice;
 
     private int discount;
-
 
 }
