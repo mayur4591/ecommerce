@@ -9,6 +9,7 @@ import com.example.ecommerce.request.LoginRequest;
 import com.example.ecommerce.response.AuthResponse;
 import com.example.ecommerce.service.CartService;
 import com.example.ecommerce.service.CustomeUserServiceImplementation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/auth")
+@Slf4j
 public class AuthController {
 
     @Autowired
@@ -45,63 +47,89 @@ public class AuthController {
     @PostMapping("/signup")
     public ResponseEntity<AuthResponse> createUserHandler(@RequestBody User user) throws UserException {
 
-        String email =user.getEmail();
-        String password =user.getPassword();
-        String firstName=user.getFirstName();
-        String lastName=user.getLastName();
+        log.info("Signup request received for email={}", user.getEmail());
 
-        User isEmailExist=userRepository.findByEmail(email);
+        String email = user.getEmail();
+        String password = user.getPassword();
+        String firstName = user.getFirstName();
+        String lastName = user.getLastName();
+        String role = user.getRole();
 
-        if(isEmailExist!=null){
+        User isEmailExist = userRepository.findByEmail(email);
+
+        if (isEmailExist != null) {
+            log.error("Signup failed: Email {} already exists", email);
             throw new UserException("Email is allrady used with another account");
         }
 
-        User createdUser=new User();
+        log.info("Creating new user with email={}", email);
+
+        User createdUser = new User();
         createdUser.setEmail(email);
         createdUser.setPassword(passwordEncoder.encode(password));
         createdUser.setFirstName(firstName);
         createdUser.setLastName(lastName);
+        createdUser.setRole(role);
 
-        User savedUser =userRepository.save(createdUser);
+        User savedUser = userRepository.save(createdUser);
+        log.info("User saved successfully with id={} and email={}", savedUser.getId(), savedUser.getEmail());
+
         Cart cart = cartService.createCart(savedUser);
+        log.info("Cart created successfully for userId={}", savedUser.getId());
 
-        Authentication authentication=new UsernamePasswordAuthenticationToken(savedUser.getEmail(),savedUser.getPassword());
+        Authentication authentication =
+                new UsernamePasswordAuthenticationToken(savedUser.getEmail(), savedUser.getPassword());
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         String token = jwtProvider.generateToken(authentication);
+        log.info("JWT token generated successfully for email={}", email);
 
-        AuthResponse authResponse =new AuthResponse(token,"Signup Success");
+        AuthResponse authResponse = new AuthResponse(token, "Signup Success");
+
+        log.info("Signup completed successfully for email={}", email);
 
         return new ResponseEntity<AuthResponse>(authResponse, HttpStatus.CREATED);
     }
 
     @PostMapping("/signin")
-    public ResponseEntity<AuthResponse> loginUserHandler(@RequestBody LoginRequest loginRequest){
-        String username = loginRequest.getEmail();
-        String password = loginRequest.getPassword();
+    public ResponseEntity<AuthResponse> loginUserHandler(@RequestBody LoginRequest loginRequest) {
 
-        Authentication authentication =authenticate(username,password);
+        String username = loginRequest.getEmail();
+        log.info("Signin request received for email={}", username);
+
+        Authentication authentication = authenticate(username, loginRequest.getPassword());
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         String token = jwtProvider.generateToken(authentication);
+        log.info("JWT token generated successfully for email={}", username);
 
-        AuthResponse authResponse =new AuthResponse(token,"Signin Success");
+        AuthResponse authResponse = new AuthResponse(token, "Signin Success");
+
+        log.info("Signin successful for email={}", username);
 
         return new ResponseEntity<AuthResponse>(authResponse, HttpStatus.CREATED);
-
     }
 
     private Authentication authenticate(String username, String password) {
-        UserDetails userDetails = customeUserServiceImplementation.loadUserByUsername(username);
 
-        if(userDetails==null){
+        log.info("Authenticating user with email={}", username);
+
+        UserDetails userDetails =
+                customeUserServiceImplementation.loadUserByUsername(username);
+
+        if (userDetails == null) {
+            log.error("Authentication failed: User not found for email={}", username);
             throw new BadCredentialsException("Invalid Username");
         }
 
-        if(!passwordEncoder.matches(password,userDetails.getPassword())){
+        if (!passwordEncoder.matches(password, userDetails.getPassword())) {
+            log.error("Authentication failed: Invalid password for email={}", username);
             throw new BadCredentialsException("Invalid Password");
         }
 
-        return new UsernamePasswordAuthenticationToken(userDetails,null,userDetails.getAuthorities());
+        log.info("Authentication successful for email={}", username);
+
+        return new UsernamePasswordAuthenticationToken(
+                userDetails, null, userDetails.getAuthorities());
     }
 }

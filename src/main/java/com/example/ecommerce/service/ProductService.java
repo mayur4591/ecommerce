@@ -13,6 +13,11 @@ public interface ProductService {
      Product updateProduct(Long productId,Product product) throws ProductException;
      Product findProductById(Long id) throws ProductException;
      List<Product> findProductByCategory(String category);
-     Page<Product> getAllProduct(String category,List<String> colors,List<String> sizes,Integer minPrice,Integer maxPrice,Integer minDiscount,String sort,String stock,Integer pageNumber,Integer pageSize);
+     Page<Product> getAllProduct(String category,List<String> colors,List<String> sizes,
+                                 Integer minPrice,Integer maxPrice,
+                                 Integer minDiscount,String sort,
+                                 String stock,Integer pageNumber,
+                                 Integer pageSize);
+     Page<Product> getAllProduct(Integer pageNumber,Integer pageSize);
     List<Product> findAllProducts();
 }

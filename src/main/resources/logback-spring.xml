@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true">
+
+    <!-- ========================= -->
+    <!-- GLOBAL PROPERTIES -->
+    <!-- ========================= -->
+    <property name="LOG_PATH" value="logs"/>
+
+    <property name="LOG_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{40} - %msg%n"/>
+
+    <!-- ========================= -->
+    <!-- AUTH LOGS -->
+    <!-- ========================= -->
+    <appender name="AUTH_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/auth/auth.log</file>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/auth/auth-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>14</maxHistory>
+        </rollingPolicy>
+
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- ========================= -->
+    <!-- ORDER LOGS -->
+    <!-- ========================= -->
+    <appender name="ORDER_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/order/order.log</file>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/order/order-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>14</maxHistory>
+        </rollingPolicy>
+
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- ========================= -->
+    <!-- PRODUCT LOGS -->
+    <!-- ========================= -->
+    <appender name="PRODUCT_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/product/product.log</file>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/product/product-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>14</maxHistory>
+        </rollingPolicy>
+
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- ========================= -->
+    <!-- CART LOGS -->
+    <!-- ========================= -->
+    <appender name="CART_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/cart/cart.log</file>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/cart/cart-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>14</maxHistory>
+        </rollingPolicy>
+
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- ========================= -->
+    <!-- USER LOGS -->
+    <!-- ========================= -->
+    <appender name="USER_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/user/user.log</file>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/user/user-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>14</maxHistory>
+        </rollingPolicy>
+
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- ========================= -->
+    <!-- ERROR LOGS -->
+    <!-- ========================= -->
+    <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/error/error.log</file>
+
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/error/error-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- ========================= -->
+    <!-- APPLICATION LOGS -->
+    <!-- ========================= -->
+    <appender name="APP_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/application/app.log</file>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/application/app-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- ========================= -->
+    <!-- PACKAGE-BASED LOGGERS -->
+    <!-- ========================= -->
+
+    <!-- AUTH -->
+    <logger name="com.example.ecommerce.controller.AuthController" level="INFO" additivity="false">
+        <appender-ref ref="AUTH_FILE"/>
+        <appender-ref ref="ERROR_FILE"/>
+    </logger>
+
+    <logger name="com.example.ecommerce.config" level="INFO" additivity="false">
+        <appender-ref ref="AUTH_FILE"/>
+        <appender-ref ref="ERROR_FILE"/>
+    </logger>
+
+    <!-- ORDER -->
+    <logger name="com.example.ecommerce.controller.OrderController" level="INFO" additivity="false">
+        <appender-ref ref="ORDER_FILE"/>
+        <appender-ref ref="ERROR_FILE"/>
+    </logger>
+
+    <logger name="com.example.ecommerce.service.OrderService" level="INFO" additivity="false">
+        <appender-ref ref="ORDER_FILE"/>
+    </logger>
+
+    <!-- PRODUCT -->
+    <logger name="com.example.ecommerce.controller.ProductController" level="INFO" additivity="false">
+        <appender-ref ref="PRODUCT_FILE"/>
+        <appender-ref ref="ERROR_FILE"/>
+    </logger>
+
+    <logger name="com.example.ecommerce.service.ProductService" level="INFO" additivity="false">
+        <appender-ref ref="PRODUCT_FILE"/>
+    </logger>
+
+    <!-- CART -->
+    <logger name="com.example.ecommerce.controller.CartController" level="INFO" additivity="false">
+        <appender-ref ref="CART_FILE"/>
+        <appender-ref ref="ERROR_FILE"/>
+    </logger>
+
+    <logger name="com.example.ecommerce.service.CartService" level="INFO" additivity="false">
+        <appender-ref ref="CART_FILE"/>
+    </logger>
+
+    <!-- USER -->
+    <logger name="com.example.ecommerce.controller.UserController" level="INFO" additivity="false">
+        <appender-ref ref="USER_FILE"/>
+        <appender-ref ref="ERROR_FILE"/>
+    </logger>
+
+    <logger name="com.example.ecommerce.service.UserService" level="INFO" additivity="false">
+        <appender-ref ref="USER_FILE"/>
+    </logger>
+
+    <!-- ========================= -->
+    <!-- ROOT LOGGER -->
+    <!-- ========================= -->
+    <root level="INFO">
+        <appender-ref ref="APP_FILE"/>
+        <appender-ref ref="ERROR_FILE"/>
+    </root>
+
+</configuration>

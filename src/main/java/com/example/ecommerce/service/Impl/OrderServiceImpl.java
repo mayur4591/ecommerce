@@ -4,15 +4,19 @@ import com.example.ecommerce.entity.*;
 import com.example.ecommerce.exception.OrderException;
 import com.example.ecommerce.repository.*;
 import com.example.ecommerce.service.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
+@Slf4j
 public class OrderServiceImpl implements OrderService {
 
     @Autowired
@@ -84,68 +88,121 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Order findOrderById(Long orderId) throws OrderException {
+
+        log.debug("Fetching order by orderId={}", orderId);
+
         Optional<Order> order = orderRepository.findById(orderId);
-        if(order.isPresent()){
+
+        if (order.isPresent()) {
+            log.debug("Order found with orderId={}", orderId);
             return order.get();
-        }else{
-            throw new OrderException("Order not found with id " + order );
         }
+
+        log.warn("Order not found with orderId={}", orderId);
+        throw new OrderException("Order not found with id " + orderId);
     }
 
     @Override
     public List<Order> usersOrderHistory(Long userId) {
-        return orderRepository.getUsersOrders(userId);
+
+        log.info("Fetching order history for userId={}", userId);
+
+        List<Order> orders = orderRepository.getUsersOrders(userId);
+
+        log.info("Found {} orders for userId={}", orders.size(), userId);
+        return orders;
     }
 
     @Override
     public Order placedOrder(Long orderId) throws OrderException {
+
+        log.info("Placing order with orderId={}", orderId);
+
         Order order = findOrderById(orderId);
         order.setOrderStatus("PLACED");
         order.getPaymentDetails().setStatus("COMPLETED");
 
-        return orderRepository.save(order);
+        Order updatedOrder = orderRepository.save(order);
+
+        log.info("Order placed successfully with orderId={}", orderId);
+        return updatedOrder;
     }
 
     @Override
     public Order confirmedOrder(Long orderId) throws OrderException {
+
+        log.info("Confirming order with orderId={}", orderId);
+
         Order order = findOrderById(orderId);
         order.setOrderStatus("CONFIRMED");
 
-        return orderRepository.save(order);
+        Order updatedOrder = orderRepository.save(order);
+
+        log.info("Order confirmed with orderId={}", orderId);
+        return updatedOrder;
     }
 
     @Override
     public Order shippedOrder(Long orderId) throws OrderException {
+
+        log.info("Shipping order with orderId={}", orderId);
+
         Order order = findOrderById(orderId);
         order.setOrderStatus("SHIPPED");
 
-        return orderRepository.save(order);
+        Order updatedOrder = orderRepository.save(order);
+
+        log.info("Order shipped with orderId={}", orderId);
+        return updatedOrder;
     }
 
     @Override
     public Order deliveredOrder(Long orderId) throws OrderException {
+
+        log.info("Delivering order with orderId={}", orderId);
+
         Order order = findOrderById(orderId);
         order.setOrderStatus("DELIVERED");
 
-        return orderRepository.save(order);
+        Order updatedOrder = orderRepository.save(order);
+
+        log.info("Order delivered with orderId={}", orderId);
+        return updatedOrder;
     }
 
     @Override
     public Order cancledOrder(Long orderId) throws OrderException {
+
+        log.info("Cancelling order with orderId={}", orderId);
+
         Order order = findOrderById(orderId);
         order.setOrderStatus("CANCELLED");
 
-        return orderRepository.save(order);    }
+        Order updatedOrder = orderRepository.save(order);
+
+        log.info("Order cancelled with orderId={}", orderId);
+        return updatedOrder;
+    }
 
     @Override
     public void deleteOrder(Long orderId) throws OrderException {
-        Order order = findOrderById(orderId);
 
+        log.warn("Deleting order with orderId={}", orderId);
+
+        Order order = findOrderById(orderId);
         orderRepository.deleteById(orderId);
+
+        log.warn("Order deleted with orderId={}", orderId);
     }
 
     @Override
     public List<Order> getAllOrders() {
-        return orderRepository.findAll();
+
+        log.info("Fetching all orders");
+
+        List<Order> orders = orderRepository.findAll();
+
+        log.info("Total orders found={}", orders.size());
+        return orders;
     }
 }
