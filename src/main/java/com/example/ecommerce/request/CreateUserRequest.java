@@ -1,44 +1,42 @@
 package com.example.ecommerce.request;
 
-import com.example.ecommerce.entity.Address;
-import com.example.ecommerce.entity.PaymentInformation;
-import com.example.ecommerce.entity.Rating;
-import com.example.ecommerce.entity.Review;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class CreateUserRequest {
 
-    private Long id;
 
+    @NotBlank(message = "First name is required")
+    @Size(min = 2, max = 50, message = "First name must be between 2 and 50 characters")
     private String firstName;
 
+    @NotBlank(message = "Last name is required")
+    @Size(min = 2, max = 50, message = "Last name must be between 2 and 50 characters")
     private String lastName;
 
-    private String password;
-
+    @NotBlank(message = "Email is required")
+    @Email(message = "Invalid email format")
     private String email;
 
-    private String role;
+    @NotBlank(message = "Password is required")
+    @Size(min = 8, message = "Password must be at least 8 characters")
+    @Pattern(
+            regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*?&]).+$",
+            message = "Password must contain uppercase, lowercase, number and special character"
+    )
+    private String password;
 
+//    @NotBlank(message = "Mobile number is required")
+//    @Pattern(
+//            regexp = "^[6-9]\\d{9}$",
+//            message = "Invalid mobile number"
+//    )
     private String mobile;
 
-    private List<Address> addresses =new ArrayList<>();
-
-    private List<PaymentInformation> paymentInformation=new ArrayList<>();
-
-    private List<Rating> ratings = new ArrayList<>();
-
-    private List<Review> reviews = new ArrayList<>();
-
-    private LocalDateTime createdAt;
-
+    private String role;
 }
