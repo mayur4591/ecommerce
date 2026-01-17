@@ -48,12 +48,11 @@ public class JwtValidator extends OncePerRequestFilter {
                         .getBody();
 
                 String email = String.valueOf(claims.get("email"));
-                String authorities = String.valueOf(claims.get("authorities"));
+                List<String> roles = (List<String>) claims.get("authorities");
+                List<GrantedAuthority> auths = AuthorityUtils.commaSeparatedStringToAuthorityList(String.join(",", roles));
 
                 log.debug("JWT validated successfully for user='{}'", email);
 
-                List<GrantedAuthority> auths =
-                        AuthorityUtils.commaSeparatedStringToAuthorityList(authorities);
 
                 Authentication authentication =
                         new UsernamePasswordAuthenticationToken(email, null, auths);

@@ -37,56 +37,84 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private OrderItemRepository orderItemRepository;
 
+    @Autowired
+    private CartItemRepository cartItemRepository;
+
+    @Autowired
+    private CartRepository cartRepository;
+
     @Override
+    @Transactional
     public Order createOrder(User user, Address shipppingAddress) {
+        // 1. Handle Address
         shipppingAddress.setUser(user);
-        Address address = addressRepository.save(shipppingAddress);
-        user.getAddresses().add(address);
-        userRepository.save(user);
+        Address address = (shipppingAddress.getId() != null)
+                ? addressRepository.findById(shipppingAddress.getId()).orElse(null)
+                : null;
 
-        Cart cart =cartService.findUserCart(user.getId());
-        List<OrderItem> orderItems=new ArrayList<>();
-
-        for(CartItem item: cart.getCartItems()){
-            OrderItem orderItem = new OrderItem();
-
-            orderItem.setPrice(item.getPrice());
-            orderItem.setProduct(item.getProduct());
-            orderItem.setQuantity(item.getQuantity());
-            orderItem.setSize(item.getSize());
-            orderItem.setUserId(item.getUserId());
-            orderItem.setDiscountedPrice(item.getDiscountedPrice());
-
-            OrderItem createdOrderItem = orderItemRepository.save(orderItem);
-
-            orderItems.add(orderItem);
+        if (address == null) {
+            address = addressRepository.save(shipppingAddress);
+            user.getAddresses().add(address);
+            userRepository.save(user);
         }
 
+        // 2. Prepare Order
+        Cart cart = cartService.findUserCart(user.getId());
         Order createdOrder = new Order();
         createdOrder.setUser(user);
-        createdOrder.setOrderItems(orderItems);
         createdOrder.setTotalPrice(cart.getTotalPrice());
         createdOrder.setTotalDiscountedPrice(cart.getTotalDiscountedPrice());
         createdOrder.setDiscount(cart.getDiscount());
         createdOrder.setTotalItem(cart.getTotalItem());
-
         createdOrder.setShippingAddress(address);
         createdOrder.setOrderDate(LocalDateTime.now());
         createdOrder.setOrderStatus("PENDING");
         createdOrder.getPaymentDetails().setStatus("PENDING");
         createdOrder.setCreatedAt(LocalDateTime.now());
 
+        // Save the Order FIRST so we have an ID for the items
         Order savedOrder = orderRepository.save(createdOrder);
 
-        for(OrderItem item : orderItems){
-            item.setOrder(savedOrder);
-            orderItemRepository.save(item);
+        // 3. Create OrderItems from CartItems
+        List<OrderItem> orderItems = new ArrayList<>();
+        for (CartItem item : cart.getCartItems()) {
+            OrderItem orderItem = new OrderItem();
+            orderItem.setPrice(item.getPrice());
+            orderItem.setProduct(item.getProduct());
+            orderItem.setQuantity(item.getQuantity());
+            orderItem.setSize(item.getSize());
+            orderItem.setUserId(item.getUserId());
+            orderItem.setDiscountedPrice(item.getDiscountedPrice());
+            orderItem.setOrder(savedOrder); // Link directly
+
+            OrderItem createdOrderItem = orderItemRepository.save(orderItem);
+            orderItems.add(createdOrderItem);
         }
+
+        // 4. Update the saved order with the items list
+        savedOrder.setOrderItems(orderItems);
+        // No need for another save here if using @Transactional, but it's fine
+
+        // 5. CLEAR CART CAREFULLY
+        // Capture items to delete
+        List<CartItem> itemsToDelete = new ArrayList<>(cart.getCartItems());
+
+        // Disconnect items from the cart in memory first
+        cart.getCartItems().clear();
+        cart.setTotalItem(0);
+        cart.setTotalPrice(0);
+        cart.setTotalDiscountedPrice(0);
+        cart.setDiscount(0);
+        cartRepository.save(cart);
+
+        // Finally, delete the cart items from the DB
+        cartItemRepository.deleteAll(itemsToDelete);
 
         return savedOrder;
     }
 
     @Override
+    @Transactional
     public Order findOrderById(Long orderId) throws OrderException {
 
         log.debug("Fetching order by orderId={}", orderId);
@@ -114,6 +142,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
     public Order placedOrder(Long orderId) throws OrderException {
 
         log.info("Placing order with orderId={}", orderId);
@@ -129,6 +158,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
     public Order confirmedOrder(Long orderId) throws OrderException {
 
         log.info("Confirming order with orderId={}", orderId);
@@ -143,6 +173,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
     public Order shippedOrder(Long orderId) throws OrderException {
 
         log.info("Shipping order with orderId={}", orderId);
@@ -157,6 +188,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
     public Order deliveredOrder(Long orderId) throws OrderException {
 
         log.info("Delivering order with orderId={}", orderId);
@@ -171,6 +203,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
     public Order cancledOrder(Long orderId) throws OrderException {
 
         log.info("Cancelling order with orderId={}", orderId);
@@ -185,6 +218,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
     public void deleteOrder(Long orderId) throws OrderException {
 
         log.warn("Deleting order with orderId={}", orderId);

@@ -24,18 +24,18 @@ public class JwtProvider {
         log.info("Generating JWT token for user='{}'", auth.getName());
 
         // collect authorities as a list of role strings
-        List<String> roles = auth.getAuthorities().stream()
+        List<String> authorities = auth.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
 
-        log.debug("User roles extracted for token generation: {}", roles);
+        log.debug("User roles extracted for token generation: {}", authorities);
 
         String jwt = Jwts.builder()
                 .setSubject(auth.getName())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(new Date().getTime() + 846000000))
                 .claim("email", auth.getName())
-                .claim("roles", roles)
+                .claim("authorities", authorities)
                 .signWith(key)
                 .compact();
 
@@ -76,7 +76,7 @@ public class JwtProvider {
                 .parseClaimsJws(jwt)
                 .getBody();
 
-        Object rolesObj = claims.get("roles");
+        Object rolesObj = claims.get("authorities");
 
         if (rolesObj instanceof List) {
             log.debug("Roles extracted successfully from token");

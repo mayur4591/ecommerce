@@ -29,6 +29,7 @@ public class CartServiceImpl implements CartService {
     private ProductService productService;
 
     @Override
+    @Transactional
     public Cart createCart(User user) {
 
         log.info("Creating cart for userId={}", user.getId());
@@ -45,6 +46,7 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
+    @Transactional
     public String addCartItem(Long userId, AddItemRequest req) throws ProductException {
 
         log.info("Adding item to cart for userId={}, productId={}",

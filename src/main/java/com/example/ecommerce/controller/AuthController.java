@@ -62,6 +62,9 @@ public class AuthController {
             throw new UserException("Email is allrady used with another account");
         }
 
+        String otp = String.valueOf((int)(Math.random() * 9000) + 1000);
+
+
         log.info("Creating new user with email={}", email);
 
         User createdUser = new User();

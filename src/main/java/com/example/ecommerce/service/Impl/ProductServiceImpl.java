@@ -15,6 +15,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -34,6 +35,7 @@ public class ProductServiceImpl implements ProductService {
     private CategoryRepository categoryRepository;
 
     @Override
+    @Transactional
     public Product createProduct(CreateProductRequest req) {
 
         log.info("Creating product with title='{}'", req.getTitle());
@@ -106,6 +108,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional
     public String deleteProduct(Long productId) throws ProductException {
 
         log.info("Deleting product with productId={}", productId);
@@ -120,6 +123,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional
     public Product updateProduct(Long productId, Product req) throws ProductException {
 
         log.info("Updating product with productId={}", productId);

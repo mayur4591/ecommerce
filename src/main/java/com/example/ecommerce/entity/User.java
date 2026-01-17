@@ -24,13 +24,14 @@ public class User {
 
     private String password;
 
+    @Column(nullable = false, unique = true)
     private String email;
 
     private String role;
 
     private String mobile;
 
-    @OneToMany(mappedBy ="user",cascade = CascadeType.ALL)
+    @OneToMany(mappedBy ="user",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
     private List<Address> addresses =new ArrayList<>();
 
     @Embedded
