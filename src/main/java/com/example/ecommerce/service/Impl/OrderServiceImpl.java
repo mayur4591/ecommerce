@@ -2,6 +2,8 @@ package com.example.ecommerce.service.Impl;
 
 import com.example.ecommerce.entity.*;
 import com.example.ecommerce.exception.OrderException;
+import com.example.ecommerce.kaffka.events.OrderPlacedEvent;
+import com.example.ecommerce.kaffka.producer.OrderEventProducer;
 import com.example.ecommerce.repository.*;
 import com.example.ecommerce.service.*;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +44,11 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private CartRepository cartRepository;
+
+
+    @Autowired
+    private OrderEventProducer producer;
+
 
     @Override
     @Transactional
@@ -110,6 +117,12 @@ public class OrderServiceImpl implements OrderService {
         // Finally, delete the cart items from the DB
         cartItemRepository.deleteAll(itemsToDelete);
 
+        producer.send(new OrderPlacedEvent(
+                savedOrder.getId(),
+                savedOrder.getUser().getEmail(),
+                savedOrder.getTotalPrice(),
+                savedOrder.getTotalItem()
+        ));
         return savedOrder;
     }
 
