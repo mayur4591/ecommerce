@@ -3,7 +3,9 @@ package com.example.ecommerce.service.Impl;
 import com.example.ecommerce.entity.*;
 import com.example.ecommerce.exception.OrderException;
 import com.example.ecommerce.kaffka.events.OrderPlacedEvent;
+import com.example.ecommerce.kaffka.events.OrderStatusUpdatedEvent;
 import com.example.ecommerce.kaffka.producer.OrderEventProducer;
+import com.example.ecommerce.kaffka.producer.OrderStatusEventProducer;
 import com.example.ecommerce.repository.*;
 import com.example.ecommerce.service.*;
 import lombok.extern.slf4j.Slf4j;
@@ -47,7 +49,10 @@ public class OrderServiceImpl implements OrderService {
 
 
     @Autowired
-    private OrderEventProducer producer;
+    private OrderEventProducer orderEventProducer;
+
+    @Autowired
+    private OrderStatusEventProducer orderStatusEventProducer;
 
 
     @Override
@@ -117,7 +122,7 @@ public class OrderServiceImpl implements OrderService {
         // Finally, delete the cart items from the DB
         cartItemRepository.deleteAll(itemsToDelete);
 
-        producer.send(new OrderPlacedEvent(
+        orderEventProducer.send(new OrderPlacedEvent(
                 savedOrder.getId(),
                 savedOrder.getUser().getEmail(),
                 savedOrder.getTotalPrice(),
@@ -180,7 +185,7 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderStatus("CONFIRMED");
 
         Order updatedOrder = orderRepository.save(order);
-
+        sendOrderStatusUpdateEvent(order);
         log.info("Order confirmed with orderId={}", orderId);
         return updatedOrder;
     }
@@ -195,7 +200,7 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderStatus("SHIPPED");
 
         Order updatedOrder = orderRepository.save(order);
-
+        sendOrderStatusUpdateEvent(order);
         log.info("Order shipped with orderId={}", orderId);
         return updatedOrder;
     }
@@ -210,7 +215,7 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderStatus("DELIVERED");
 
         Order updatedOrder = orderRepository.save(order);
-
+        sendOrderStatusUpdateEvent(order);
         log.info("Order delivered with orderId={}", orderId);
         return updatedOrder;
     }
@@ -227,6 +232,7 @@ public class OrderServiceImpl implements OrderService {
         Order updatedOrder = orderRepository.save(order);
 
         log.info("Order cancelled with orderId={}", orderId);
+        sendOrderStatusUpdateEvent(order);
         return updatedOrder;
     }
 
@@ -238,7 +244,7 @@ public class OrderServiceImpl implements OrderService {
 
         Order order = findOrderById(orderId);
         orderRepository.deleteById(orderId);
-
+        sendOrderStatusUpdateEvent(order);
         log.warn("Order deleted with orderId={}", orderId);
     }
 
@@ -251,5 +257,15 @@ public class OrderServiceImpl implements OrderService {
 
         log.info("Total orders found={}", orders.size());
         return orders;
+    }
+
+    private void sendOrderStatusUpdateEvent(Order order) {
+        OrderStatusUpdatedEvent event = new OrderStatusUpdatedEvent(
+                order.getId(),
+                order.getUser().getEmail(),
+                order.getOrderStatus()
+        );
+        orderStatusEventProducer.send(event);
+        log.info("Sent OrderStatusUpdatedEvent for orderId={}", order.getId());
     }
 }

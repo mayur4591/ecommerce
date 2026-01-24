@@ -1,6 +1,7 @@
 package com.example.ecommerce.service.Impl;
 
 import com.example.ecommerce.kaffka.events.OrderPlacedEvent;
+import com.example.ecommerce.kaffka.events.OrderStatusUpdatedEvent;
 import com.example.ecommerce.service.EmailService;
 
 import jakarta.mail.MessagingException;
@@ -77,5 +78,25 @@ public class EmailServiceImpl implements EmailService {
 
         mailSender.send(message);
     }
+
+
+    public void sendOrderStatusUpdateEmail(OrderStatusUpdatedEvent event) {
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(event.getEmail());
+        message.setSubject("Order Status Update - Order #" + event.getOrderId());
+
+        message.setText(
+                "Greetings,\n\n" +
+                        "Your order status has been updated.\n\n" +
+                        "Order ID: " + event.getOrderId() + "\n" +
+                        "Current Status: " + event.getNewStatus() + "\n\n" +
+                        "Thank you for shopping with us.\n\n" +
+                        "E-Commerce Team"
+        );
+
+        mailSender.send(message);
+    }
+
 }
 
